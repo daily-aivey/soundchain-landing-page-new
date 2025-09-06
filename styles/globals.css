@@ -1,0 +1,870 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --particle-color: rgba(255, 255, 255, 0.8);
+  --accent-1: #8B5FFF;
+  --accent-2: #4FC3F7;
+  --accent-3: #C084FC;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+html {
+  scroll-behavior: auto !important; /* Disable smooth scrolling that can cause blocking */
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Prevent horizontal scroll on mobile */
+  width: 100%;
+  min-width: 320px; /* Minimum width for very small screens */
+  scroll-behavior: auto !important; /* Disable smooth scrolling */
+  overscroll-behavior: auto !important; /* Disable overscroll effects */
+}
+
+/* === Animated Background Gradient === */
+.animated-gradient {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(-45deg, #0a0a0a, #1a0b2e, #2a0044, #140022, #0a0a0a);
+  background-size: 600% 600%;
+  animation: gradientMove 30s ease-in-out infinite, pulseIntensity 16s ease-in-out infinite alternate;
+  z-index: -10;
+  mix-blend-mode: normal;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 0%; }
+  20% { background-position: 100% 0%; }
+  40% { background-position: 100% 100%; }
+  60% { background-position: 0% 100%; }
+  80% { background-position: 50% 50%; }
+  100% { background-position: 0% 0%; }
+}
+
+@keyframes pulseIntensity {
+  0% { filter: brightness(1) saturate(1); }
+  50% { filter: brightness(1.6) saturate(1.4); }
+  100% { filter: brightness(1) saturate(1); }
+}
+
+/* === Content Wrapper === */
+.content-wrapper {
+  position: relative;
+  z-index: 30;
+  padding: 0 12px; /* Add padding for mobile */
+  width: 100%;
+  /* REMOVED: overflow-x: hidden - this was blocking scroll on mobile */
+  box-sizing: border-box;
+}
+
+/* === Force proper centering === */
+header.max-w-4xl {
+  max-width: 56rem !important; /* 896px */
+  margin-left: auto !important;
+  margin-right: auto !important;
+  text-align: center !important;
+}
+
+.flex.justify-center {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+.mx-auto {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* === Form Layout Fixes === */
+form.flex.flex-col {
+  gap: 24px !important;
+}
+
+/* === Typography Fixes === */
+/* Removed font-size overrides to prevent layout distortion */
+
+/* === Logo Animation === */
+@keyframes pulse-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 12px rgba(139, 95, 255, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 24px rgba(139, 95, 255, 0.9));
+  }
+}
+
+.logo-pulse {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* === Hero Typography === */
+.hero-gradient-text {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f4ecff 32%,
+    #e6d9ff 58%,
+    #d6c6ff 78%,
+    #c1adff 92%,
+    #b693ff 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+}
+
+.hero-glow {
+  text-shadow:
+    0 0 18px rgba(163, 135, 255, 0.45),
+    0 0 36px rgba(163, 135, 255, 0.28);
+}
+
+.hero-subtitle {
+  color: rgba(237, 237, 237, 0.92);
+  text-shadow: 0 1px 10px rgba(139,95,255,0.18);
+}
+
+.hero-highlight {
+  position: relative;
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2), var(--accent-3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 10px rgba(139,95,255,0.25));
+}
+
+/* === Sequential Reveal System === */
+[data-reveal] {
+  /* Hide elements immediately with CSS to prevent flash */
+  opacity: 0 !important;
+  transform: translateY(40px) !important;
+  filter: blur(4px) !important;
+  will-change: opacity, transform, filter;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
+              filter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-reveal].revealed {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  filter: blur(0) !important;
+}
+
+/* Synchronized animation for grouped benefit cards on desktop */
+.grouped-with-first-benefit {
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
+              filter 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Logo fade-in animation - controlled by JavaScript */
+.logo-always-visible {
+  /* Opacity and transform will be set by JavaScript for proper timing */
+}
+
+@keyframes logoFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal],
+  .logo-always-visible {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* === Progress Bar === */
+.signup-progress {
+  position: relative;
+  width: 100%;
+  max-width: 800px; /* Increased from 600px for better visibility */
+  margin: 0 auto; /* Center the progress bar */
+  height: 20px; /* Increased from 12px for a taller progress bar */
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden; /* Ensures content stays within rounded corners */
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.35);
+  backdrop-filter: saturate(120%) blur(0.5px);
+}
+
+/* Progress fill that acts as clipping container for visualizer */
+.signup-progress-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #7C4DFF, #B694FF, #7C4DFF);
+  background-size: 200% 100%;
+  border-radius: inherit;
+  transition: width 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  filter: drop-shadow(0 0 10px rgba(139,95,255,0.45));
+  overflow: hidden; /* This clips the visualizer to the fill width */
+  z-index: 2;
+}
+
+/* Audio visualizer container - spans FULL progress bar width but positioned relative to progress bar */
+.audio-visualizer-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* CRITICAL: Must match the actual width of the parent progress bar */
+  /* Use a large width that gets constrained by the parent's max-width */
+  width: 100vw; /* Large width that gets constrained by parent */
+  max-width: 800px; /* Match .signup-progress max-width exactly */
+  height: 100%;
+  pointer-events: none;
+  /* This ensures the visualizer spans the full bar width but is clipped by the fill */
+}
+
+.progress-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 100%;
+  width: 100%;
+  padding: 0 4px;
+  /* Ensure bars are visible within the progress bar */
+  position: relative;
+  z-index: 2;
+}
+
+.progress-bar-segment {
+  width: 5px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 2px;
+  transform-origin: bottom;
+  margin: 0 0.5px;
+  /* Will be animated by the audioEqualizer animation */
+  will-change: transform;
+}
+
+.progress-bar-segment:nth-child(1) {
+  animation-delay: 0s;
+}
+.progress-bar-segment:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.progress-bar-segment:nth-child(3) {
+  animation-delay: 0.4s;
+}
+.progress-bar-segment:nth-child(4) {
+  animation-delay: 0.6s;
+}
+.progress-bar-segment:nth-child(5) {
+  animation-delay: 0.8s;
+}
+.progress-bar-segment:nth-child(6) {
+  animation-delay: 1s;
+}
+.progress-bar-segment:nth-child(7) {
+  animation-delay: 0.1s;
+}
+.progress-bar-segment:nth-child(8) {
+  animation-delay: 0.3s;
+}
+.progress-bar-segment:nth-child(9) {
+  animation-delay: 0.5s;
+}
+.progress-bar-segment:nth-child(10) {
+  animation-delay: 0.7s;
+}
+.progress-bar-segment:nth-child(11) {
+  animation-delay: 0.9s;
+}
+.progress-bar-segment:nth-child(12) {
+  animation-delay: 0.15s;
+}
+.progress-bar-segment:nth-child(13) {
+  animation-delay: 0.35s;
+}
+.progress-bar-segment:nth-child(14) {
+  animation-delay: 0.55s;
+}
+.progress-bar-segment:nth-child(15) {
+  animation-delay: 0.75s;
+}
+.progress-bar-segment:nth-child(16) {
+  animation-delay: 0.95s;
+}
+.progress-bar-segment:nth-child(17) {
+  animation-delay: 0.05s;
+}
+.progress-bar-segment:nth-child(18) {
+  animation-delay: 0.25s;
+}
+.progress-bar-segment:nth-child(19) {
+  animation-delay: 0.45s;
+}
+.progress-bar-segment:nth-child(20) {
+  animation-delay: 0.65s;
+}
+.progress-bar-segment:nth-child(21) {
+  animation-delay: 0.85s;
+}
+.progress-bar-segment:nth-child(22) {
+  animation-delay: 0.12s;
+}
+.progress-bar-segment:nth-child(23) {
+  animation-delay: 0.32s;
+}
+.progress-bar-segment:nth-child(24) {
+  animation-delay: 0.52s;
+}
+.progress-bar-segment:nth-child(25) {
+  animation-delay: 0.72s;
+}
+.progress-bar-segment:nth-child(26) {
+  animation-delay: 0.92s;
+}
+.progress-bar-segment:nth-child(27) {
+  animation-delay: 0.08s;
+}
+.progress-bar-segment:nth-child(28) {
+  animation-delay: 0.28s;
+}
+.progress-bar-segment:nth-child(29) {
+  animation-delay: 0.48s;
+}
+.progress-bar-segment:nth-child(30) {
+  animation-delay: 0.68s;
+}
+
+/* Generate animation delays for all 95 segments */
+.progress-bar-segment:nth-child(31) { animation-delay: 0.02s; }
+.progress-bar-segment:nth-child(32) { animation-delay: 0.22s; }
+.progress-bar-segment:nth-child(33) { animation-delay: 0.42s; }
+.progress-bar-segment:nth-child(34) { animation-delay: 0.62s; }
+.progress-bar-segment:nth-child(35) { animation-delay: 0.82s; }
+.progress-bar-segment:nth-child(36) { animation-delay: 0.04s; }
+.progress-bar-segment:nth-child(37) { animation-delay: 0.24s; }
+.progress-bar-segment:nth-child(38) { animation-delay: 0.44s; }
+.progress-bar-segment:nth-child(39) { animation-delay: 0.64s; }
+.progress-bar-segment:nth-child(40) { animation-delay: 0.84s; }
+.progress-bar-segment:nth-child(41) { animation-delay: 0.06s; }
+.progress-bar-segment:nth-child(42) { animation-delay: 0.26s; }
+.progress-bar-segment:nth-child(43) { animation-delay: 0.46s; }
+.progress-bar-segment:nth-child(44) { animation-delay: 0.66s; }
+.progress-bar-segment:nth-child(45) { animation-delay: 0.86s; }
+.progress-bar-segment:nth-child(46) { animation-delay: 0.09s; }
+.progress-bar-segment:nth-child(47) { animation-delay: 0.29s; }
+.progress-bar-segment:nth-child(48) { animation-delay: 0.49s; }
+.progress-bar-segment:nth-child(49) { animation-delay: 0.69s; }
+.progress-bar-segment:nth-child(50) { animation-delay: 0.89s; }
+.progress-bar-segment:nth-child(51) { animation-delay: 0.11s; }
+.progress-bar-segment:nth-child(52) { animation-delay: 0.31s; }
+.progress-bar-segment:nth-child(53) { animation-delay: 0.51s; }
+.progress-bar-segment:nth-child(54) { animation-delay: 0.71s; }
+.progress-bar-segment:nth-child(55) { animation-delay: 0.91s; }
+.progress-bar-segment:nth-child(56) { animation-delay: 0.13s; }
+.progress-bar-segment:nth-child(57) { animation-delay: 0.33s; }
+.progress-bar-segment:nth-child(58) { animation-delay: 0.53s; }
+.progress-bar-segment:nth-child(59) { animation-delay: 0.73s; }
+.progress-bar-segment:nth-child(60) { animation-delay: 0.93s; }
+.progress-bar-segment:nth-child(61) { animation-delay: 0.16s; }
+.progress-bar-segment:nth-child(62) { animation-delay: 0.36s; }
+.progress-bar-segment:nth-child(63) { animation-delay: 0.56s; }
+.progress-bar-segment:nth-child(64) { animation-delay: 0.76s; }
+.progress-bar-segment:nth-child(65) { animation-delay: 0.96s; }
+.progress-bar-segment:nth-child(66) { animation-delay: 0.18s; }
+.progress-bar-segment:nth-child(67) { animation-delay: 0.38s; }
+.progress-bar-segment:nth-child(68) { animation-delay: 0.58s; }
+.progress-bar-segment:nth-child(69) { animation-delay: 0.78s; }
+.progress-bar-segment:nth-child(70) { animation-delay: 0.98s; }
+.progress-bar-segment:nth-child(71) { animation-delay: 0.19s; }
+.progress-bar-segment:nth-child(72) { animation-delay: 0.39s; }
+.progress-bar-segment:nth-child(73) { animation-delay: 0.59s; }
+.progress-bar-segment:nth-child(74) { animation-delay: 0.79s; }
+.progress-bar-segment:nth-child(75) { animation-delay: 0.99s; }
+.progress-bar-segment:nth-child(76) { animation-delay: 0.21s; }
+.progress-bar-segment:nth-child(77) { animation-delay: 0.41s; }
+.progress-bar-segment:nth-child(78) { animation-delay: 0.61s; }
+.progress-bar-segment:nth-child(79) { animation-delay: 0.81s; }
+.progress-bar-segment:nth-child(80) { animation-delay: 0.01s; }
+.progress-bar-segment:nth-child(81) { animation-delay: 0.23s; }
+.progress-bar-segment:nth-child(82) { animation-delay: 0.43s; }
+.progress-bar-segment:nth-child(83) { animation-delay: 0.63s; }
+.progress-bar-segment:nth-child(84) { animation-delay: 0.83s; }
+.progress-bar-segment:nth-child(85) { animation-delay: 0.03s; }
+.progress-bar-segment:nth-child(86) { animation-delay: 0.27s; }
+.progress-bar-segment:nth-child(87) { animation-delay: 0.47s; }
+.progress-bar-segment:nth-child(88) { animation-delay: 0.67s; }
+.progress-bar-segment:nth-child(89) { animation-delay: 0.87s; }
+.progress-bar-segment:nth-child(90) { animation-delay: 0.07s; }
+.progress-bar-segment:nth-child(91) { animation-delay: 0.37s; }
+.progress-bar-segment:nth-child(92) { animation-delay: 0.57s; }
+.progress-bar-segment:nth-child(93) { animation-delay: 0.77s; }
+.progress-bar-segment:nth-child(94) { animation-delay: 0.97s; }
+.progress-bar-segment:nth-child(95) { animation-delay: 0.17s; }
+
+/* Add the actual bouncing animation - SPED UP */
+.progress-bar-segment {
+  animation: audioEqualizer 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes audioEqualizer {
+  0% {
+    transform: scaleY(0.3);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+/* optional: soft animated sheen across the fill */
+.signup-progress-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient( to right, transparent 0%, rgba(255,255,255,0.18) 40%, transparent 80% );
+  mix-blend-mode: screen;
+  animation: progressSheen 3.6s linear infinite;
+}
+
+@keyframes progressSheen {
+  0% { transform: translateX(-30%); }
+  100% { transform: translateX(130%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signup-progress-fill { 
+    transition: none; 
+  }
+  .signup-progress-fill::before,
+  .signup-progress-fill::after {
+    animation: none;
+  }
+}
+
+/* === Social Links === */
+.social-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.social-icon-wrapper:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 25px rgba(139, 95, 255, 0.8);
+}
+
+.social-icon-img {
+  width: 24px;
+  height: 24px;
+}
+
+/* === Toast Notifications === */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(22, 14, 37, 0.9);
+  border: 1px solid rgba(139, 95, 255, 0.35);
+  box-shadow: 0 10px 40px rgba(139, 95, 255, 0.25), inset 0 0 40px rgba(139, 95, 255, 0.12);
+  color: #EDEDED;
+  backdrop-filter: blur(10px);
+  transform: translateY(-10px) scale(0.98);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toast.show {
+  animation: toast-in 340ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.toast.hide {
+  animation: toast-out 260ms cubic-bezier(0.55, 0, 0.45, 1) forwards;
+}
+
+@keyframes toast-in {
+  0% { opacity: 0; transform: translateY(-10px) scale(0.98); }
+  60% { opacity: 1; transform: translateY(0) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes toast-out {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-6px) scale(0.98); }
+}
+
+/* === Force Grid Layout for Benefits Section === */
+.benefits-grid-force {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 2rem !important;
+}
+
+@media (min-width: 768px) {
+  .benefits-grid-force {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/* === Fix Benefit Card Image Sizes === */
+.benefits-grid-force img {
+  width: 56px !important;
+  height: 56px !important;
+  margin: 0 auto 16px auto !important;
+  object-fit: contain !important;
+}
+
+/* === Benefits Section Layout === */
+.benefits-section {
+  max-width: 896px;
+  margin: 0 auto 64px auto;
+  padding: 0 16px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .benefits-section {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* === Fix Footer Visibility and Layout === */
+/* Ensure content wrapper uses flexbox properly */
+.content-wrapper {
+  position: relative;
+  z-index: 20;
+}
+
+/* Fix footer opacity - it should be visible by default */
+footer {
+  opacity: 1 !important;
+}
+
+/* Fix footer animation - ensure it reveals properly */
+footer[data-reveal] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+footer[data-reveal].revealed {
+  opacity: 1 !important;
+  transform: translateY(0);
+}
+
+.toast-icon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: radial-gradient(120% 120% at 0% 0%, #8B5FFF 0%, #5E2BFF 65%, #2B0E5E 100%);
+  box-shadow: 0 0 18px rgba(139, 95, 255, 0.55);
+}
+
+.toast-title {
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.toast-text {
+  font-size: 0.95rem;
+  opacity: 0.92;
+}
+
+.toast-close {
+  margin-left: 6px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #EDEDED;
+  cursor: pointer;
+  transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+  border: none;
+}
+
+.toast-close:hover { 
+  transform: scale(1.05); 
+  background: rgba(139, 95, 255, 0.25); 
+  box-shadow: 0 0 18px rgba(139, 95, 255, 0.35);
+}
+
+.toast-progress {
+  position: absolute;
+  left: 0;  
+  right: 0; 
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #8B5FFF, #C084FC);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+.toast-progress.run {
+  animation: toast-progress 4.2s linear forwards;
+}
+
+@keyframes toast-progress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* === Pattern Overlay === */
+.pattern-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(60deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 2px, transparent 2px, transparent 6px),
+              repeating-linear-gradient(-60deg, rgba(255, 255, 255, 0.02) 0px, rgba(255, 255, 255, 0.02) 2px, transparent 2px, transparent 6px);
+  animation: patternMove 40s linear infinite;
+  z-index: 1;
+  mix-blend-mode: soft-light;
+  opacity: 0.6;
+}
+
+@keyframes patternMove {
+  0% { background-position: 0 0; }
+  100% { background-position: 600px 600px; }
+}
+
+/* === Focus and Accessibility === */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .hero-gradient-text {
+    background: none;
+    color: white;
+  }
+  
+  .hero-highlight {
+    background: none;
+    color: #8B5FFF;
+    text-decoration: underline;
+  }
+}
+
+/* Focus indicators for better accessibility */
+button:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #8B5FFF;
+  outline-offset: 2px;
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* === MOBILE RESPONSIVENESS === */
+
+/* Mobile-first approach for small screens */
+@media (max-width: 768px) {
+  /* Fix content wrapper padding on mobile */
+  .content-wrapper {
+    padding: 0 16px;
+  }
+  
+  /* Ensure proper mobile spacing and centering */
+  .relative.min-h-screen {
+    width: 100%;
+    max-width: 100vw;
+    /* REMOVED: overflow-x: hidden - this was blocking scroll on mobile */
+  }
+  
+  /* Mobile hero adjustments */
+  .hero-gradient-text {
+    line-height: 1.1 !important;
+    text-align: center;
+    padding: 0 8px;
+  }
+  
+  /* Mobile subtitle adjustments */
+  .hero-subtitle {
+    padding: 0 12px;
+    line-height: 1.3;
+  }
+  
+  /* Progress section mobile fixes */
+  .signup-progress {
+    max-width: calc(100vw - 32px); /* Account for padding */
+    margin: 0 auto 16px auto;
+  }
+  
+  /* Benefits section mobile stacking */
+  .benefits-section {
+    gap: 24px;
+    margin-bottom: 48px;
+    padding: 0 20px;
+  }
+  
+  /* Footer mobile adjustments */
+  footer {
+    padding: 20px 16px !important;
+  }
+  
+  /* Toast positioning on mobile */
+  .toast {
+    right: 12px;
+    left: 12px;
+    top: 16px;
+    width: auto;
+    max-width: calc(100vw - 24px);
+  }
+}
+
+/* Very small screens (iPhone SE, etc.) */
+@media (max-width: 375px) {
+  .content-wrapper {
+    padding: 0 12px;
+  }
+  
+  .hero-gradient-text {
+    padding: 0 4px;
+  }
+  
+  .signup-progress {
+    max-width: calc(100vw - 24px);
+  }
+  
+  .benefits-section {
+    padding: 0 16px;
+  }
+}
+
+/* Ensure particles work properly on mobile */
+@media (max-width: 768px) {
+  canvas {
+    width: 100vw !important;
+    height: 100vh !important;
+  }
+  
+  /* Reduce particle density on mobile for better performance */
+  .animated-gradient {
+    background-size: 400% 400%;
+  }
+}
+
+/* Fix any text overflow issues on mobile */
+@media (max-width: 768px) {
+  /* Ensure no text wrapping issues */
+  .hero-highlight {
+    display: inline;
+    white-space: normal;
+  }
+  
+  /* Allow the no-wrap span to wrap on very small screens if needed */
+  span[style*="white-space: nowrap"] {
+    white-space: normal !important;
+  }
+}
+
+/* Very small screens - allow text to wrap normally */
+@media (max-width: 480px) {
+  span[style*="white-space: nowrap"] {
+    white-space: normal !important;
+  }
+}
+
+/* === MOBILE-SPECIFIC TITLE SCROLL REVEAL === */
+/* Hide title on mobile initially - only show after scroll */
+@media (max-width: 768px) {
+  .mobile-scroll-reveal[data-reveal] {
+    opacity: 0 !important;
+    transform: translateY(30px) !important;
+    filter: blur(10px) !important;
+    /* REMOVED: visibility: hidden !important; - this was blocking reveals */
+    display: block !important; /* Ensure element is still in flow but hidden */
+    transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  }
+  
+  .mobile-scroll-reveal[data-reveal].revealed {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    filter: blur(0) !important;
+    /* REMOVED: visibility: visible !important; - let default flow handle this */
+  }
+  
+  /* Simplified override for non-revealed elements */
+  .mobile-scroll-reveal:not(.revealed) {
+    opacity: 0 !important;
+    /* REMOVED: visibility: hidden !important; - this was blocking reveals */
+  }
+}
+
+/* Desktop keeps original behavior - title shows immediately via JavaScript, not CSS */
+@media (min-width: 769px) {
+  .mobile-scroll-reveal {
+    /* Let the animation system handle desktop title - don't force visibility */
+    /* JavaScript will animate this immediately on desktop */
+  }
+  
+  /* Allow data-reveal to hide desktop title initially so animation system can control it */
+  .mobile-scroll-reveal[data-reveal] {
+    /* JavaScript will handle desktop animation - don't override with CSS */
+  }
+}
