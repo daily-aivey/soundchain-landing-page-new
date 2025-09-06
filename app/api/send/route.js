@@ -1,7 +1,11 @@
 import { Resend } from 'resend';
 import { addSignup, getProgress, checkEmailExists } from '../../../lib/database.js';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend only if API key is available
+let resend;
+if (process.env.RESEND_API_KEY) {
+  resend = new Resend(process.env.RESEND_API_KEY);
+}
 
 // In-memory storage for development when database is not available
 const tempEmailStore = new Set();
@@ -65,6 +69,37 @@ export async function POST(req) {
     const siteUrl = 'https://sndchain.xyz/';
     const xUrl = 'https://x.com/joinsoundchain';
     const igUrl = 'https://www.instagram.com/joinsoundchain/?utm_source=ig_web_button_share_sheet';
+
+    // Check if Resend is configured
+    if (!resend) {
+      console.log('Resend not configured, skipping email send');
+      // Still process the signup without sending email
+      let emailAdded = false;
+      let progress = { count: 0, goal: 5000, percentage: 0 };
+      
+      if (usingFallbackStorage) {
+        const normalizedEmail = email.trim().toLowerCase();
+        tempEmailStore.add(normalizedEmail);
+        tempCount++;
+        emailAdded = true;
+        progress = {
+          count: tempCount,
+          goal: 5000,
+          percentage: Math.min(100, (tempCount / 5000) * 100)
+        };
+        console.log(`Email added to fallback storage without email send. Total count: ${tempCount}`);
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          count: progress.count, 
+          goal: progress.goal,
+          percentage: progress.percentage,
+          message: 'Signup recorded (email service not configured)'
+        }),
+        { status: 200, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } }
+      );
+    }
 
     const result = await resend.emails.send({
       from: 'SoundChain <noreply@sndchain.xyz>',
