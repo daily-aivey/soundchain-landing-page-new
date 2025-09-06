@@ -113,8 +113,7 @@ export default function Home() {
     const startTime = performance.now();
     
     // PRODUCTION DEBUG: Environment check
-    console.log('
-🔍 SCROLL SYSTEM INITIALIZATION:');
+    console.log('\\n🔍 SCROLL SYSTEM INITIALIZATION:');
     console.log(`  - Environment: ${process.env.NODE_ENV || 'unknown'}`);
     console.log(`  - Window size: ${window.innerWidth}x${window.innerHeight}`);
     console.log(`  - Device type: ${window.innerWidth <= 768 ? 'MOBILE' : 'DESKTOP'}`);
@@ -131,8 +130,7 @@ export default function Home() {
       'benefits': document.querySelector('.benefits-section')
     };
     
-    console.log('
-🎯 CRITICAL ELEMENTS CHECK:');
+    console.log('\\n🎯 CRITICAL ELEMENTS CHECK:');
     Object.entries(criticalElements).forEach(([name, element]) => {
       console.log(`  - ${name}: ${element ? '✅ Found' : '❌ Missing'}`);
       if (element) {
@@ -189,8 +187,7 @@ export default function Home() {
     };
     
     // Check immediately and after delays to catch timing issues
-    console.log('
-⏱️ TIMING DEBUG:');
+    console.log('\\n⏱️ TIMING DEBUG:');
     console.log(`  - Initial check at ${Math.round(performance.now() - startTime)}ms`);
     checkCSSStates();
     
@@ -351,7 +348,7 @@ export default function Home() {
     // Check device type immediately when creating observers
     const isCurrentlyMobile = window.innerWidth <= 768;
     
-    console.log('\n🔭 OBSERVER SETUP:');
+    console.log('\\n🔭 OBSERVER SETUP:');
     console.log(`  - Device: ${isCurrentlyMobile ? 'MOBILE' : 'DESKTOP'}`);
     console.log(`  - Threshold: ${isCurrentlyMobile ? '0.1 (10%)' : '0.3 (30%)'}`);
     console.log(`  - Root margin: ${isCurrentlyMobile ? '0px 0px -10% 0px' : '0px 0px -30% 0px'}`);
@@ -500,13 +497,13 @@ export default function Home() {
       console.log(`📋 Found ${revealElements.length} elements to animate`);
       
       // Debug: Show initial positions of all elements
-      console.log('\n🗺️ ELEMENT POSITIONS:');
+      console.log('\\n🗺️ ELEMENT POSITIONS:');
       
       const footer = document.querySelector('footer[data-reveal]');
       const regularElements = [];
       
       // Build reveal order based on DOM order
-      console.log('\n🗺️ ELEMENT OBSERVATION SETUP:');
+      console.log('\\n🗺️ ELEMENT OBSERVATION SETUP:');
       revealElements.forEach((element, index) => {
         const htmlElement = element as HTMLElement;
         const rect = element.getBoundingClientRect();
@@ -552,7 +549,7 @@ export default function Home() {
         }
       });
       
-      console.log('\n🔄 Observer configurations:');
+      console.log('\\n🔄 Observer configurations:');
       console.log('   📋 Regular elements:', regularElements.length);
       if (isCurrentlyMobile) {
         console.log('     - MOBILE: threshold: 0.1 (10% visible - lenient for mobile)');
@@ -573,7 +570,7 @@ export default function Home() {
         console.log('     - rootMargin: "0px 0px 0px 0px" (no restrictive margin)');
       }
       
-      console.log('\n✅ SCROLL SHOULD NOW WORK - Removed forced scroll reset!');
+      console.log('\\n✅ SCROLL SHOULD NOW WORK - Removed forced scroll reset!');
     }, 200);
     
     return () => {
@@ -587,7 +584,7 @@ export default function Home() {
 
   // Progress bar fill-up animation with optimized updates
   useEffect(() => {
-    console.log('\n🎯 PROGRESS BAR ANIMATION TRIGGER:');
+    console.log('\\n🎯 PROGRESS BAR ANIMATION TRIGGER:');
     console.log('  - progressVisible:', progressVisible);
     console.log('  - targetProgress:', targetProgress + '%');
     console.log('  - current progress:', progress + '%');
