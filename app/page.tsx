@@ -18,6 +18,24 @@ export default function Home() {
   const [animationStarted, setAnimationStarted] = useState(false); // Track if animation has started
   const [isMobile, setIsMobile] = useState(false); // Track mobile state for title delay
   
+  // PRODUCTION DEBUG: Track environment and hydration
+  useEffect(() => {
+    console.log('🌍 ENVIRONMENT DEBUG:');
+    console.log('  - Node ENV:', process.env.NODE_ENV);
+    console.log('  - Is Browser:', typeof window !== 'undefined');
+    console.log('  - User Agent:', navigator.userAgent);
+    console.log('  - Page loaded at:', new Date().toISOString());
+    console.log('  - Document ready state:', document.readyState);
+    console.log('  - Page visibility:', document.visibilityState);
+    
+    // Track hydration status
+    if (document.readyState === 'loading') {
+      console.log('  - ⚠️ DOM still loading during React mount!');
+    } else {
+      console.log('  - ✅ DOM fully loaded before React mount');
+    }
+  }, []);
+  
   // Mobile detection and title delay setup
   useEffect(() => {
     const checkMobile = () => {
@@ -93,12 +111,59 @@ export default function Home() {
   // Sequential scroll-based reveal system
   useEffect(() => {
     const startTime = performance.now();
-    console.log(`🔧 SCROLL SYSTEM DEBUG MODE - Device: ${window.innerWidth <= 768 ? 'MOBILE' : 'DESKTOP'}`);
+    
+    // PRODUCTION DEBUG: Environment check
+    console.log('
+🔍 SCROLL SYSTEM INITIALIZATION:');
+    console.log(`  - Environment: ${process.env.NODE_ENV || 'unknown'}`);
+    console.log(`  - Window size: ${window.innerWidth}x${window.innerHeight}`);
+    console.log(`  - Device type: ${window.innerWidth <= 768 ? 'MOBILE' : 'DESKTOP'}`);
+    console.log(`  - Scroll position: ${window.scrollY}px`);
+    console.log(`  - Document state: ${document.readyState}`);
+    console.log(`  - Body dimensions: ${document.body.offsetWidth}x${document.body.offsetHeight}`);
+    console.log(`  - React hydration complete: ${document.documentElement.hasAttribute('data-reactroot') || document.querySelector('#__next') !== null}`);
+    
+    // Check if critical elements exist
+    const criticalElements = {
+      'logo': document.querySelector('.logo-always-visible'),
+      'title': document.querySelector('.mobile-scroll-reveal'),
+      'progress': document.querySelector('#progress-section'),
+      'benefits': document.querySelector('.benefits-section')
+    };
+    
+    console.log('
+🎯 CRITICAL ELEMENTS CHECK:');
+    Object.entries(criticalElements).forEach(([name, element]) => {
+      console.log(`  - ${name}: ${element ? '✅ Found' : '❌ Missing'}`);
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        console.log(`    Position: ${Math.round(rect.top)}px top, ${Math.round(rect.left)}px left`);
+        console.log(`    Size: ${Math.round(rect.width)}x${Math.round(rect.height)}`);
+        console.log(`    Visible: ${rect.width > 0 && rect.height > 0}`);
+      }
+    });
+    
+    console.log(`\n🔧 SCROLL SYSTEM DEBUG MODE - Device: ${window.innerWidth <= 768 ? 'MOBILE' : 'DESKTOP'}`);
     
     // Check if elements are actually hidden by CSS initially
-    setTimeout(() => {
+    const checkCSSStates = () => {
       const revealElements = document.querySelectorAll('[data-reveal]');
-      console.log(`🔍 CSS STATE CHECK - Found ${revealElements.length} reveal elements:`);
+      console.log(`\n🎨 CSS STATE CHECK - Found ${revealElements.length} reveal elements:`);
+      
+      if (revealElements.length === 0) {
+        console.log('  ⚠️ NO REVEAL ELEMENTS FOUND! This is likely the problem.');
+        console.log('  🔍 Checking if DOM is fully ready...');
+        console.log(`    - Document ready: ${document.readyState}`);
+        console.log(`    - Body exists: ${!!document.body}`);
+        console.log(`    - All scripts loaded: ${document.scripts.length} scripts`);
+        
+        // Try to find elements without data-reveal
+        const titleElement = document.querySelector('h1');
+        console.log(`    - Found h1 element: ${!!titleElement}`);
+        if (titleElement) {
+          console.log(`    - H1 classes: "${titleElement.className}"`);
+        }
+      }
       
       revealElements.forEach((element, index) => {
         const htmlElement = element as HTMLElement;
@@ -113,19 +178,31 @@ export default function Home() {
         console.log(`      📏 Element visible: ${htmlElement.offsetWidth > 0 && htmlElement.offsetHeight > 0}`);
         console.log(`      🏷️ Full className: "${htmlElement.className}"`);
         console.log(`      🏷️ Has 'mobile-scroll-reveal': ${htmlElement.classList.contains('mobile-scroll-reveal')}`);
+        console.log(`      📍 Rect: top=${Math.round(element.getBoundingClientRect().top)}px, height=${Math.round(element.getBoundingClientRect().height)}px`);
         
-        // Check if desktop title should be hidden but isn't
-        if (window.innerWidth > 768 && htmlElement.classList.contains('mobile-scroll-reveal')) {
-          console.log(`      🚨 DESKTOP TITLE PROBLEM: This should be hidden but opacity is ${computedStyle.opacity}!`);
-          console.log(`      📋 CSS classes affecting visibility:`);
-          
-          // Check each class for visibility rules
-          htmlElement.classList.forEach(className => {
-            console.log(`        - ${className}`);
-          });
+        // PRODUCTION DEBUG: Check if CSS is loading correctly
+        const styles = window.getComputedStyle(htmlElement);
+        if (styles.opacity === '1' && window.innerWidth > 768 && htmlElement.classList.contains('mobile-scroll-reveal')) {
+          console.log(`      🚨 PRODUCTION ISSUE: Desktop title visible immediately (opacity: ${styles.opacity})`);
         }
       });
-    }, 50);
+    };
+    
+    // Check immediately and after delays to catch timing issues
+    console.log('
+⏱️ TIMING DEBUG:');
+    console.log(`  - Initial check at ${Math.round(performance.now() - startTime)}ms`);
+    checkCSSStates();
+    
+    setTimeout(() => {
+      console.log(`\n  - Delayed check at ${Math.round(performance.now() - startTime)}ms`);
+      checkCSSStates();
+    }, 100);
+    
+    setTimeout(() => {
+      console.log(`\n  - Final check at ${Math.round(performance.now() - startTime)}ms`);
+      checkCSSStates();
+    }, 500);
     
     // Logo fade-in animation on page load (separate from scroll system)
     const animateLogo = () => {
@@ -274,25 +351,36 @@ export default function Home() {
     // Check device type immediately when creating observers
     const isCurrentlyMobile = window.innerWidth <= 768;
     
+    console.log('\n🔭 OBSERVER SETUP:');
+    console.log(`  - Device: ${isCurrentlyMobile ? 'MOBILE' : 'DESKTOP'}`);
+    console.log(`  - Threshold: ${isCurrentlyMobile ? '0.1 (10%)' : '0.3 (30%)'}`);
+    console.log(`  - Root margin: ${isCurrentlyMobile ? '0px 0px -10% 0px' : '0px 0px -30% 0px'}`);
+    
     // Standard observer for most elements - device-responsive settings
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
+        console.log(`\n🔎 INTERSECTION BATCH: ${entries.length} entries`);
+        entries.forEach((entry, index) => {
           const element = entry.target as HTMLElement;
           const rect = entry.boundingClientRect;
           const elementName = element.tagName + (element.id ? `#${element.id}` : '') + (element.className ? `.${element.className.split(' ')[0]}` : '');
           
-          // Skip logging for already revealed elements to reduce noise
-          if (!element.classList.contains('revealed')) {
-            console.log(`🔍 INTERSECTION EVENT: ${elementName}`);
-            console.log(`   📊 isIntersecting: ${entry.isIntersecting}`);
-            console.log(`   📊 intersectionRatio: ${entry.intersectionRatio.toFixed(3)}`);
-            console.log(`   📊 scroll position: ${window.scrollY}px`);
-          }
+          // Always log intersection events in production debug mode
+          console.log(`  ${index + 1}. INTERSECTION: ${elementName}`);
+          console.log(`     📊 isIntersecting: ${entry.isIntersecting}`);
+          console.log(`     📊 intersectionRatio: ${entry.intersectionRatio.toFixed(3)}`);
+          console.log(`     📊 scroll position: ${window.scrollY}px`);
+          console.log(`     📊 viewport: ${window.innerHeight}px`);
+          console.log(`     📊 element top: ${Math.round(rect.top)}px`);
+          console.log(`     📊 element bottom: ${Math.round(rect.bottom)}px`);
+          console.log(`     📊 already revealed: ${element.classList.contains('revealed')}`);
           
           // Only handle intersection if element hasn't been revealed yet
           if (!element.classList.contains('revealed')) {
+            console.log(`     ➡️ Processing intersection for ${elementName}`);
             handleElementIntersection(element, entry.isIntersecting, rect, elementName);
+          } else {
+            console.log(`     ⏭️ Skipping ${elementName} - already revealed`);
           }
         });
       },
@@ -301,6 +389,8 @@ export default function Home() {
         rootMargin: isCurrentlyMobile ? '0px 0px -10% 0px' : '0px 0px -30% 0px' // Less restrictive margin on mobile
       }
     );
+    
+    console.log('✅ Standard observer created');
     
     // Track scroll behavior for mobile title timing
     let lastScrollY = 0;
@@ -416,34 +506,49 @@ export default function Home() {
       const regularElements = [];
       
       // Build reveal order based on DOM order
+      console.log('\n🗺️ ELEMENT OBSERVATION SETUP:');
       revealElements.forEach((element, index) => {
         const htmlElement = element as HTMLElement;
         const rect = element.getBoundingClientRect();
         const elementName = element.tagName + (element.id ? `#${htmlElement.id}` : '') + (element.className ? `.${element.className.split(' ')[0]}` : '');
         const viewport = window.innerHeight;
         const spaceBelow = viewport - rect.bottom;
+        const isVisible = rect.width > 0 && rect.height > 0 && rect.top < viewport && rect.bottom > 0;
         
         revealOrder.push(htmlElement);
         
-        console.log(`${revealOrder.length}. ${elementName}:`);
-        console.log(`   Y: ${Math.round(rect.top)}px, Height: ${Math.round(rect.height)}px`);
-        console.log(`   Space below: ${Math.round(spaceBelow)}px ${spaceBelow < 100 ? '⚠️ TOO CLOSE TO BOTTOM!' : ''}`);
-        console.log(`   📍 Order index: ${revealOrder.length - 1} (must wait for element ${revealOrder.length - 2} if not first)`);
+        console.log(`  ${revealOrder.length}. OBSERVING: ${elementName}`);
+        console.log(`     📍 Position: top=${Math.round(rect.top)}px, height=${Math.round(rect.height)}px`);
+        console.log(`     📍 Space below: ${Math.round(spaceBelow)}px ${spaceBelow < 100 ? '⚠️ TOO CLOSE!' : '✅'}`);
+        console.log(`     📍 Currently visible: ${isVisible}`);
+        console.log(`     📍 Order index: ${revealOrder.length - 1}`);
+        
+        // Check element attributes before observing
+        const hasDataReveal = htmlElement.hasAttribute('data-reveal');
+        const dataDelay = htmlElement.getAttribute('data-delay');
+        console.log(`     🏷️ Has data-reveal: ${hasDataReveal}`);
+        console.log(`     🏷️ Data delay: ${dataDelay || 'none'}`);
         
         // Separate footer and mobile title from other elements
         if (element.tagName.toLowerCase() === 'footer') {
-          console.log('   📌 Using SPECIAL FOOTER OBSERVER with lenient settings');
+          console.log('     📌 → FOOTER OBSERVER (lenient)');
           footerObserver.observe(htmlElement);
         } else if (window.innerWidth <= 768 && htmlElement.classList.contains('mobile-scroll-reveal')) {
-          // FIXED: Check window width directly instead of relying on isMobile variable
-          console.log('   📱 Using SPECIAL MOBILE TITLE OBSERVER with strict scroll requirement');
+          console.log('     📱 → MOBILE TITLE OBSERVER (strict)');
           if (mobileTitleObserver) {
             mobileTitleObserver.observe(htmlElement);
+          } else {
+            console.log('     ⚠️ MOBILE OBSERVER NOT CREATED!');
           }
         } else {
           regularElements.push(element);
-          console.log(`   📋 Using STANDARD OBSERVER for ${elementName}`);
-          observer.observe(htmlElement);
+          console.log(`     📋 → STANDARD OBSERVER`);
+          try {
+            observer.observe(htmlElement);
+            console.log(`     ✅ Successfully observing ${elementName}`);
+          } catch (err) {
+            console.log(`     ❌ Failed to observe ${elementName}:`, err);
+          }
         }
       });
       
