@@ -243,6 +243,10 @@ export default function Home() {
     // Track which elements have been revealed to prevent re-revealing
     const revealedElements = new Set<HTMLElement>();
     
+    // PRODUCTION FIX: Track page load time to prevent immediate title reveals
+    const pageLoadTime = performance.now();
+    const MIN_TIME_BEFORE_TITLE_REVEAL = 1000; // Wait at least 1 second after page load
+    
     // Sequential animation queue to ensure proper order
     const animationQueue = new Map<HTMLElement, { delay: number, triggerTime: number, canReveal: boolean }>();
     let lastRevealedIndex = -1;
@@ -377,17 +381,20 @@ export default function Home() {
             // Check if this is the desktop title revealing too early
             if (element.classList.contains('mobile-scroll-reveal') && 
                 window.innerWidth > 768) {
-              // Desktop title should only reveal after user scroll, not on initial page load
+              // Desktop title should only reveal after user interaction, not immediately on page load
+              const timeSincePageLoad = performance.now() - pageLoadTime;
               const isInitialPageLoad = window.scrollY === 0;
+              const isTooSoonAfterPageLoad = timeSincePageLoad < MIN_TIME_BEFORE_TITLE_REVEAL;
               
-              // Block only if it's truly the initial page load with no scroll
-              if (isInitialPageLoad && entry.isIntersecting) {
-                console.log(`     🚨 PRODUCTION FIX: Blocking desktop title initial page load reveal`);
-                console.log(`       - scrollY: ${window.scrollY}px (initial page load)`);
+              // Block if it's initial page load OR too soon after page load
+              if ((isInitialPageLoad || isTooSoonAfterPageLoad) && entry.isIntersecting) {
+                console.log(`     🚨 PRODUCTION FIX: Blocking desktop title early reveal`);
+                console.log(`       - scrollY: ${window.scrollY}px`);
+                console.log(`       - timeSincePageLoad: ${Math.round(timeSincePageLoad)}ms (needs: >${MIN_TIME_BEFORE_TITLE_REVEAL}ms)`);
                 console.log(`       - intersection: ${(entry.intersectionRatio * 100).toFixed(1)}%`);
                 return; // Skip processing this intersection
-              } else if (!isInitialPageLoad) {
-                console.log(`     ✅ DESKTOP TITLE: User has scrolled (${window.scrollY}px), allowing reveal`);
+              } else {
+                console.log(`     ✅ DESKTOP TITLE: Safe to reveal (scrollY: ${window.scrollY}px, time: ${Math.round(timeSincePageLoad)}ms)`);
               }
             }
             
