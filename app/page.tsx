@@ -247,6 +247,25 @@ export default function Home() {
     const pageLoadTime = performance.now();
     const MIN_TIME_BEFORE_TITLE_REVEAL = 1000; // Wait at least 1 second after page load
     
+    // DEBUG: Track intersection events for desktop title
+    let desktopTitleIntersectionCount = 0;
+    let desktopTitleLastScrollY = -1;
+    let desktopTitleRevealAttempts = [];
+    
+    console.log('🔧 DESKTOP TITLE DEBUG: Tracking system initialized');
+    console.log(`   - pageLoadTime: ${Math.round(pageLoadTime)}ms`);
+    console.log(`   - MIN_TIME_BEFORE_REVEAL: ${MIN_TIME_BEFORE_TITLE_REVEAL}ms`);
+    console.log(`   - Current scrollY: ${window.scrollY}px`);
+    console.log(`   - Window size: ${window.innerWidth}x${window.innerHeight}`);
+    
+    // Track scroll changes for debugging
+    window.addEventListener('scroll', () => {
+      if (Math.abs(window.scrollY - desktopTitleLastScrollY) > 5) { // Only log significant scroll changes
+        console.log(`📜 SCROLL DEBUG: ${desktopTitleLastScrollY}px → ${window.scrollY}px (${window.scrollY > desktopTitleLastScrollY ? 'DOWN' : 'UP'})`);
+        desktopTitleLastScrollY = window.scrollY;
+      }
+    }, { passive: true });
+    
     // Sequential animation queue to ensure proper order
     const animationQueue = new Map<HTMLElement, { delay: number, triggerTime: number, canReveal: boolean }>();
     let lastRevealedIndex = -1;
@@ -320,6 +339,20 @@ export default function Home() {
             element.classList.add('revealed');
             
             const revealTime = performance.now() - startTime;
+            
+            // DEBUG: Special logging for desktop title reveals
+            const isDesktopTitle = element.classList.contains('mobile-scroll-reveal') && window.innerWidth > 768;
+            if (isDesktopTitle) {
+              const timeSincePageLoad = performance.now() - pageLoadTime;
+              console.log(`🎉 DESKTOP TITLE ACTUALLY REVEALED!`);
+              console.log(`   - Element: ${elementName}`);
+              console.log(`   - Time: ${Math.round(revealTime)}ms after script start`);
+              console.log(`   - Time since page load: ${Math.round(timeSincePageLoad)}ms`);
+              console.log(`   - ScrollY when revealed: ${window.scrollY}px`);
+              console.log(`   - Total intersection attempts: ${desktopTitleIntersectionCount}`);
+              console.log(`   - Reveal attempts history:`, desktopTitleRevealAttempts);
+            }
+            
             console.log(`✅ ${elementName} REVEALED at ${Math.round(revealTime)}ms`);
             
             // Special handling for progress section - trigger fill animation
@@ -382,19 +415,46 @@ export default function Home() {
             if (element.classList.contains('mobile-scroll-reveal') && 
                 window.innerWidth > 768) {
               // Desktop title should only reveal after user interaction, not immediately on page load
+              desktopTitleIntersectionCount++;
               const timeSincePageLoad = performance.now() - pageLoadTime;
               const isInitialPageLoad = window.scrollY === 0;
               const isTooSoonAfterPageLoad = timeSincePageLoad < MIN_TIME_BEFORE_TITLE_REVEAL;
               
+              // LOG ALL INTERSECTION ATTEMPTS
+              console.log(`🔍 DESKTOP TITLE INTERSECTION #${desktopTitleIntersectionCount}:`);
+              console.log(`   📋 Details:`);
+              console.log(`     - isIntersecting: ${entry.isIntersecting}`);
+              console.log(`     - intersectionRatio: ${(entry.intersectionRatio * 100).toFixed(1)}%`);
+              console.log(`     - scrollY: ${window.scrollY}px`);
+              console.log(`     - timeSincePageLoad: ${Math.round(timeSincePageLoad)}ms`);
+              console.log(`     - element.top: ${Math.round(rect.top)}px`);
+              console.log(`     - element.bottom: ${Math.round(rect.bottom)}px`);
+              console.log(`     - viewport.height: ${window.innerHeight}px`);
+              console.log(`   🔍 Blocking checks:`);
+              console.log(`     - isInitialPageLoad: ${isInitialPageLoad} (scrollY === 0)`);
+              console.log(`     - isTooSoonAfterPageLoad: ${isTooSoonAfterPageLoad} (< ${MIN_TIME_BEFORE_TITLE_REVEAL}ms)`);
+              console.log(`     - shouldBlock: ${(isInitialPageLoad || isTooSoonAfterPageLoad) && entry.isIntersecting}`);
+              
+              // Track this attempt
+              desktopTitleRevealAttempts.push({
+                count: desktopTitleIntersectionCount,
+                time: Math.round(timeSincePageLoad),
+                scrollY: window.scrollY,
+                intersecting: entry.isIntersecting,
+                ratio: entry.intersectionRatio,
+                blocked: (isInitialPageLoad || isTooSoonAfterPageLoad) && entry.isIntersecting
+              });
+              
               // Block if it's initial page load OR too soon after page load
               if ((isInitialPageLoad || isTooSoonAfterPageLoad) && entry.isIntersecting) {
-                console.log(`     🚨 PRODUCTION FIX: Blocking desktop title early reveal`);
-                console.log(`       - scrollY: ${window.scrollY}px`);
-                console.log(`       - timeSincePageLoad: ${Math.round(timeSincePageLoad)}ms (needs: >${MIN_TIME_BEFORE_TITLE_REVEAL}ms)`);
-                console.log(`       - intersection: ${(entry.intersectionRatio * 100).toFixed(1)}%`);
+                console.log(`     🚨 BLOCKING: Desktop title reveal attempt blocked`);
+                console.log(`     📋 Total attempts so far: ${desktopTitleRevealAttempts.length}`);
+                console.log(`     📋 Blocked attempts: ${desktopTitleRevealAttempts.filter(a => a.blocked).length}`);
                 return; // Skip processing this intersection
               } else {
-                console.log(`     ✅ DESKTOP TITLE: Safe to reveal (scrollY: ${window.scrollY}px, time: ${Math.round(timeSincePageLoad)}ms)`);
+                console.log(`     ✅ ALLOWING: Desktop title reveal conditions met`);
+                console.log(`     🎉 TITLE SHOULD REVEAL NOW!`);
+                console.log(`     📋 Attempt history:`, desktopTitleRevealAttempts);
               }
             }
             
