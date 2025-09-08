@@ -372,8 +372,25 @@ export default function Home() {
           console.log(`     📊 element bottom: ${Math.round(rect.bottom)}px`);
           console.log(`     📊 already revealed: ${element.classList.contains('revealed')}`);
           
-          // Only handle intersection if element hasn't been revealed yet
+          // PRODUCTION FIX: Skip desktop title on initial page load
           if (!element.classList.contains('revealed')) {
+            // Check if this is the desktop title revealing too early
+            if (element.classList.contains('mobile-scroll-reveal') && 
+                window.innerWidth > 768) {
+              // Desktop title should only reveal after some user scroll, not on initial page load
+              const hasUserScrolled = window.scrollY > 20; // Just need minimal scroll to show user intent
+              const hasReasonableIntersection = entry.intersectionRatio > 0.25; // 25% visible is enough
+              
+              if (!hasUserScrolled || !hasReasonableIntersection) {
+                console.log(`     🚨 PRODUCTION FIX: Blocking desktop title early reveal`);
+                console.log(`       - scrollY: ${window.scrollY}px (needs: >20px)`);
+                console.log(`       - intersection: ${(entry.intersectionRatio * 100).toFixed(1)}% (needs: >25%)`);
+                return; // Skip processing this intersection
+              } else {
+                console.log(`     ✅ DESKTOP TITLE: Scroll requirement met (${window.scrollY}px, ${(entry.intersectionRatio * 100).toFixed(1)}%)`);
+              }
+            }
+            
             console.log(`     ➡️ Processing intersection for ${elementName}`);
             handleElementIntersection(element, entry.isIntersecting, rect, elementName);
           } else {
@@ -536,6 +553,16 @@ export default function Home() {
             mobileTitleObserver.observe(htmlElement);
           } else {
             console.log('     ⚠️ MOBILE OBSERVER NOT CREATED!');
+          }
+        } else if (window.innerWidth > 768 && htmlElement.classList.contains('mobile-scroll-reveal')) {
+          // PRODUCTION FIX: Desktop title needs special handling to prevent early reveal
+          console.log('     🖥️ → DESKTOP TITLE (delayed standard observer)');
+          regularElements.push(element);
+          try {
+            observer.observe(htmlElement);
+            console.log(`     ✅ Successfully observing ${elementName} (desktop title with scroll requirement)`);
+          } catch (err) {
+            console.log(`     ❌ Failed to observe ${elementName}:`, err);
           }
         } else {
           regularElements.push(element);
