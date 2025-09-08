@@ -377,17 +377,17 @@ export default function Home() {
             // Check if this is the desktop title revealing too early
             if (element.classList.contains('mobile-scroll-reveal') && 
                 window.innerWidth > 768) {
-              // Desktop title should only reveal after some user scroll, not on initial page load
-              const hasUserScrolled = window.scrollY > 20; // Just need minimal scroll to show user intent
-              const hasReasonableIntersection = entry.intersectionRatio > 0.25; // 25% visible is enough
+              // Desktop title should only reveal after user scroll, not on initial page load
+              const isInitialPageLoad = window.scrollY === 0;
               
-              if (!hasUserScrolled || !hasReasonableIntersection) {
-                console.log(`     🚨 PRODUCTION FIX: Blocking desktop title early reveal`);
-                console.log(`       - scrollY: ${window.scrollY}px (needs: >20px)`);
-                console.log(`       - intersection: ${(entry.intersectionRatio * 100).toFixed(1)}% (needs: >25%)`);
+              // Block only if it's truly the initial page load with no scroll
+              if (isInitialPageLoad && entry.isIntersecting) {
+                console.log(`     🚨 PRODUCTION FIX: Blocking desktop title initial page load reveal`);
+                console.log(`       - scrollY: ${window.scrollY}px (initial page load)`);
+                console.log(`       - intersection: ${(entry.intersectionRatio * 100).toFixed(1)}%`);
                 return; // Skip processing this intersection
-              } else {
-                console.log(`     ✅ DESKTOP TITLE: Scroll requirement met (${window.scrollY}px, ${(entry.intersectionRatio * 100).toFixed(1)}%)`);
+              } else if (!isInitialPageLoad) {
+                console.log(`     ✅ DESKTOP TITLE: User has scrolled (${window.scrollY}px), allowing reveal`);
               }
             }
             
