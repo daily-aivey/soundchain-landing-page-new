@@ -157,32 +157,37 @@ form.flex.flex-col {
 
 /* === Sequential Reveal System === */
 [data-reveal] {
-  /* Hide elements immediately with CSS to prevent flash */
-  opacity: 0 !important;
-  transform: translateY(40px) !important;
-  filter: blur(4px) !important;
+  opacity: 0;
+  transform: translateY(30px);
+  filter: blur(6px);
+  transition: opacity 0.8s ease, transform 0.8s ease, filter 0.8s ease;
   will-change: opacity, transform, filter;
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
-              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
-              filter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
 [data-reveal].revealed {
-  opacity: 1 !important;
-  transform: translateY(0) !important;
-  filter: blur(0) !important;
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+/* Apply transition-delay based on data-delay attribute */
+
+[data-reveal][data-delay="0"].revealed { transition-delay: 0s; }
+[data-reveal][data-delay="200"].revealed { transition-delay: 0.1s; }
+[data-reveal][data-delay="400"].revealed { transition-delay: 0.2s; }
+[data-reveal][data-delay="600"].revealed { transition-delay: 0.3s; }
+[data-reveal][data-delay="800"].revealed { transition-delay: 0.4s; }
+[data-reveal][data-delay="1000"].revealed { transition-delay: 0.5s; }
+[data-reveal][data-delay="1200"].revealed { transition-delay: 0.6s; }
+[data-reveal][data-delay="1500"].revealed { transition-delay: 0.75s; }
+[data-reveal][data-delay="2000"].revealed { transition-delay: 1s; }
+[data-reveal][data-delay="3000"].revealed { transition-delay: 1.5s; }
+
+/* Specific delay for title */
+h1.hero-gradient-text[data-reveal].revealed {
+  transition-delay: 0.2s;
 }
 
-/* Synchronized animation for grouped benefit cards on desktop */
-.grouped-with-first-benefit {
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
-              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
-              filter 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-/* Logo fade-in animation - controlled by JavaScript */
 .logo-always-visible {
-  /* Opacity and transform will be set by JavaScript for proper timing */
+  /* No opacity/transform override; let [data-reveal] handle it */
 }
 
 @keyframes logoFadeIn {
@@ -570,18 +575,7 @@ form.flex.flex-col {
 }
 
 /* === Fix Footer Visibility and Layout === */
-/* Ensure content wrapper uses flexbox properly */
-.content-wrapper {
-  position: relative;
-  z-index: 20;
-}
-
-/* Fix footer opacity - it should be visible by default */
-footer {
-  opacity: 1 !important;
-}
-
-/* Fix footer animation - ensure it reveals properly */
+/* Footer reveal animation (same as other reveal components) */
 footer[data-reveal] {
   opacity: 0;
   transform: translateY(20px);
@@ -591,6 +585,11 @@ footer[data-reveal] {
 footer[data-reveal].revealed {
   opacity: 1 !important;
   transform: translateY(0);
+}
+
+footer[data-reveal],
+footer[data-reveal].revealed {
+  filter: none !important;
 }
 
 .toast-icon {
@@ -831,28 +830,26 @@ input:focus-visible,
 }
 
 /* === MOBILE-SPECIFIC TITLE SCROLL REVEAL === */
-/* Hide title on mobile initially - only show after scroll */
 @media (max-width: 768px) {
   .mobile-scroll-reveal[data-reveal] {
-    opacity: 0 !important;
-    transform: translateY(30px) !important;
-    filter: blur(10px) !important;
-    /* REMOVED: visibility: hidden !important; - this was blocking reveals */
-    display: block !important; /* Ensure element is still in flow but hidden */
-    transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+    opacity: 0;
+    transform: translateY(30px);
+    filter: blur(8px);
   }
-  
   .mobile-scroll-reveal[data-reveal].revealed {
-    opacity: 1 !important;
-    transform: translateY(0) !important;
-    filter: blur(0) !important;
-    /* REMOVED: visibility: visible !important; - let default flow handle this */
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
   }
-  
-  /* Simplified override for non-revealed elements */
-  .mobile-scroll-reveal:not(.revealed) {
-    opacity: 0 !important;
-    /* REMOVED: visibility: hidden !important; - this was blocking reveals */
+
+  /* Title appears first on mobile */
+  .hero-gradient-text[data-reveal].revealed {
+    transition-delay: 0s;
+  }
+
+  /* Description appears after title */
+  .hero-subtitle[data-reveal].revealed {
+    transition-delay: 0.6s;
   }
 }
 

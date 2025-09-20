@@ -639,7 +639,7 @@ export default function Home() {
       return;
     }
     
-    console.log(`\n🎬 STARTING PROGRESS ANIMATION: ${progress}% → ${targetProgress}%`);
+    console.log(`\\n🎬 STARTING PROGRESS ANIMATION: ${progress}% → ${targetProgress}%`);
     
     // Mark that animation has started to prevent database interference
     setAnimationStarted(true);

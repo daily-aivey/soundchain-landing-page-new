@@ -108,123 +108,55 @@ export default function Home() {
     fetchInitialData();
   }, [animationStarted]);
 
-  // Sequential scroll-based reveal system - SIMPLIFIED VERSION
+  // Enhanced sequential scroll-based reveal system supporting data-sequence
   useEffect(() => {
-    const startTime = performance.now();
-    
-    const isMobile = window.innerWidth <= 768;
-    console.log('\\n🔍 SCROLL SYSTEM INITIALIZATION (DUAL OBSERVERS):');
-    console.log(`  - Device: ${isMobile ? 'MOBILE' : 'DESKTOP'}`);
-    console.log(`  - Screen: ${window.innerWidth}x${window.innerHeight}px`);
-    console.log(`  - Normal observer: 20% threshold, 100px margin`);
-    console.log(`  - Title observer: ${isMobile ? '20%' : '30%'} threshold, ${isMobile ? '150px' : '200px'} margin`);
-    console.log(`  - Scroll position: ${window.scrollY}px`);
-    
-    // Logo animation (separate from scroll system)
-    const animateLogo = () => {
-      const logo = document.querySelector('.logo-always-visible');
-      if (logo) {
-        const logoElement = logo as HTMLElement;
-        logoElement.style.opacity = '0';
-        logoElement.style.transform = 'translateY(20px) scale(0.95)';
-        logoElement.style.visibility = 'hidden';
-        logoElement.style.transition = 'none';
-        
-        setTimeout(() => {
-          logoElement.style.transition = 'opacity 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-          logoElement.style.visibility = 'visible';
-          
+    const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
+    // Sort elements by data-sequence (default 0)
+    const sortedElements = elements.slice().sort((a, b) => {
+      const seqA = parseInt(a.getAttribute('data-sequence') || '0', 10);
+      const seqB = parseInt(b.getAttribute('data-sequence') || '0', 10);
+      return seqA - seqB;
+    });
+    const observer = new IntersectionObserver(
+      (entries, obs) => {
+        // Collect all entries that are intersecting, and sort by data-sequence
+        const revealed: { el: HTMLElement; sequence: number; baseDelay: number }[] = [];
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const el = entry.target as HTMLElement;
+            const sequence = parseInt(el.getAttribute('data-sequence') || '0', 10);
+            const baseDelay = parseInt(el.getAttribute('data-delay') || '0', 10);
+            revealed.push({ el, sequence, baseDelay });
+            obs.unobserve(el);
+          }
+        });
+        // Sort by sequence
+        revealed.sort((a, b) => a.sequence - b.sequence);
+        // Stagger by sequence * 300ms, add baseDelay
+        revealed.forEach(({ el, sequence, baseDelay }) => {
+          const finalDelay = sequence === 1
+            ? baseDelay // Logo shows immediately
+            : sequence > 0
+              ? sequence * 300 + baseDelay
+              : baseDelay;
           setTimeout(() => {
-            logoElement.style.opacity = '1';
-            logoElement.style.transform = 'translateY(0) scale(1)';
-            console.log('🎭 LOGO REVEALED');
-          }, 50);
-        }, 200);
+            el.classList.add('revealed');
+            if (el.id === 'progress-section') {
+              setProgressVisible(true);
+            }
+          }, finalDelay);
+        });
+      },
+      {
+        threshold: 0.3,
+        rootMargin: '0px 0px -10% 0px'
       }
-    };
-    
-    animateLogo();
-    
-    // Simple, reliable scroll reveal system
-    const revealedElements = new Set<HTMLElement>();
-    
-    // Normal observer for most elements (same as before)
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        const element = entry.target as HTMLElement;
-        
-        if (entry.isIntersecting && !element.classList.contains('revealed')) {
-          console.log(`✨ Normal element intersecting: ${element.tagName}${element.className ? '.' + element.className.split(' ')[0] : ''}`);
-          revealElement(element);
-        }
-      });
-    }, {
-      threshold: 0.2,
-      rootMargin: '0px 0px -100px 0px' // Original settings for normal elements
+    );
+    sortedElements.forEach(el => {
+      el.classList.remove('revealed');
+      observer.observe(el);
     });
-    
-    // Restrictive observer ONLY for the title
-    const titleObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        const element = entry.target as HTMLElement;
-        
-        if (entry.isIntersecting && !element.classList.contains('revealed')) {
-          console.log(`🎯 Title intersecting: ${element.tagName}${element.className ? '.' + element.className.split(' ')[0] : ''}`);
-          revealElement(element);
-        }
-      });
-    }, {
-      threshold: isMobile ? 0.2 : 0.3, // Slightly more restrictive threshold for title
-      rootMargin: isMobile ? '0px 0px -150px 0px' : '0px 0px -200px 0px' // Moderately more restrictive margin for title
-    });
-    
-    const revealElement = (element: HTMLElement) => {
-      if (element.classList.contains('revealed')) return;
-      
-      const delay = parseInt(element.getAttribute('data-delay') || '0');
-      const elementName = element.tagName + (element.className ? `.${element.className.split(' ')[0]}` : '');
-      
-      console.log(`✨ REVEALING: ${elementName} with ${delay}ms delay`);
-      
-      setTimeout(() => {
-        element.style.opacity = '1';
-        element.style.transform = 'translateY(0)';
-        element.style.filter = 'blur(0)';
-        element.classList.add('revealed');
-        
-        // Special handling for progress section
-        if (element.id === 'progress-section') {
-          console.log('🎯 PROGRESS SECTION REVEALED');
-          setTimeout(() => setProgressVisible(true), 100);
-        }
-      }, delay);
-    };
-    
-    
-    // Initialize after DOM is ready
-    setTimeout(() => {
-      const elements = document.querySelectorAll('[data-reveal]');
-      console.log(`📋 Found ${elements.length} elements to observe`);
-      
-      elements.forEach((element) => {
-        const htmlElement = element as HTMLElement;
-        
-        // Use restrictive observer for title, normal observer for everything else
-        if (htmlElement.classList.contains('mobile-scroll-reveal')) {
-          console.log(`🎯 Using restrictive observer for TITLE`);
-          titleObserver.observe(htmlElement);
-        } else {
-          console.log(`✨ Using normal observer for ${htmlElement.tagName}`);
-          observer.observe(htmlElement);
-        }
-      });
-    }, 500);
-    
-    return () => {
-      console.log('🧹 CLEANUP: Disconnecting observers');
-      observer.disconnect();
-      titleObserver.disconnect();
-    };
+    return () => observer.disconnect();
   }, []);
 
   // Progress bar fill-up animation with optimized updates
@@ -739,7 +671,13 @@ export default function Home() {
             boxSizing: 'border-box'
           }}>
             {/* Logo - always visible, properly spaced */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '-60px' }} className="logo-always-visible">
+            <div 
+              style={{ display: 'flex', justifyContent: 'center', marginBottom: '-60px' }} 
+              className="logo-always-visible"
+              data-reveal
+              data-delay="0"
+              data-sequence="1"
+            >
               <img
                 src="/logo.png"
                 alt="SoundChain Logo"
@@ -758,12 +696,17 @@ export default function Home() {
               }}
               className="hero-gradient-text hero-glow mobile-scroll-reveal"
               data-reveal
+              data-delay="200"
+              data-sequence="2"
             >
               SoundChain – Music, Ownership, Community.
             </h1>
 
             {/* Description - exactly like original */}
-            <div data-reveal data-delay="400">
+            <div
+              data-reveal
+              {...(isMobile ? { 'data-sequence': '3', 'data-delay': '400' } : { 'data-delay': '200' })}
+            >
               <p style={{ fontSize: 'clamp(18px, 3vw, 24px)', marginTop: '32px', marginBottom: '20px' }} className="hero-subtitle">
                 Own the music you love. Discover the future of music with Web3.
               </p>
@@ -1006,11 +949,17 @@ export default function Home() {
             <p className="text-center text-gray-400">{count.toLocaleString('en-US')} out of {goal.toLocaleString('en-US')} people joined</p>
           </section>
 
-          {/* Benefits Section - Original structure with single data-reveal but individual cards for mobile */}
-          <section className="benefits-section" data-reveal data-delay="800">
-            <div 
+          {/* Benefits Section - Desktop: section reveals as a whole; Mobile: staggered individual cards */}
+          <section
+            className="benefits-section"
+            {...(!isMobile ? { 'data-reveal': true, 'data-delay': '800' } : {})}
+          >
+            <div
               className="benefit-card"
-              style={{ 
+              data-reveal={isMobile ? "true" : "false"}
+              data-sequence={isMobile ? "1" : "0"}
+              data-delay={isMobile ? "600" : "0"}
+              style={{
                 transition: 'transform 0.3s ease',
                 cursor: 'pointer',
                 padding: '16px',
@@ -1027,9 +976,12 @@ export default function Home() {
               <h3 style={{ fontWeight: 'bold', fontSize: '20px', marginBottom: '8px', color: 'white' }}>NFT Releases</h3>
               <p style={{ color: '#9ca3af' }}>Own your favorite tracks</p>
             </div>
-            <div 
+            <div
               className="benefit-card"
-              style={{ 
+              data-reveal={isMobile ? "true" : "false"}
+              data-sequence={isMobile ? "2" : "0"}
+              data-delay={isMobile ? "900" : "0"}
+              style={{
                 transition: 'transform 0.3s ease',
                 cursor: 'pointer',
                 padding: '16px',
@@ -1046,9 +998,12 @@ export default function Home() {
               <h3 style={{ fontWeight: 'bold', fontSize: '20px', marginBottom: '8px', color: 'white' }}>Community Rewards</h3>
               <p style={{ color: '#9ca3af' }}>Support artists, get rewards</p>
             </div>
-            <div 
+            <div
               className="benefit-card"
-              style={{ 
+              data-reveal={isMobile ? "true" : "false"}
+              data-sequence={isMobile ? "3" : "0"}
+              data-delay={isMobile ? "1200" : "0"}
+              style={{
                 transition: 'transform 0.3s ease',
                 cursor: 'pointer',
                 padding: '16px',
