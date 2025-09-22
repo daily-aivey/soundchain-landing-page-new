@@ -574,23 +574,6 @@ h1.hero-gradient-text[data-reveal].revealed {
   }
 }
 
-/* === Fix Footer Visibility and Layout === */
-/* Footer reveal animation (same as other reveal components) */
-footer[data-reveal] {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-footer[data-reveal].revealed {
-  opacity: 1 !important;
-  transform: translateY(0);
-}
-
-footer[data-reveal],
-footer[data-reveal].revealed {
-  filter: none !important;
-}
 
 .toast-icon {
   width: 28px;
@@ -863,5 +846,27 @@ input:focus-visible,
   /* Allow data-reveal to hide desktop title initially so animation system can control it */
   .mobile-scroll-reveal[data-reveal] {
     /* JavaScript will handle desktop animation - don't override with CSS */
+  }
+}
+
+/* === Initial Fade Animations for Logo & Title === */
+.logo-fade {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.8s ease forwards;
+  animation-delay: 0s; /* logo hned */
+}
+
+.title-fade {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.8s ease forwards;
+  animation-delay: 0.4s; /* title trošku později */
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

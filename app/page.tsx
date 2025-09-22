@@ -110,6 +110,8 @@ export default function Home() {
 
   // Enhanced sequential scroll-based reveal system supporting data-sequence
   useEffect(() => {
+    let initialLoad = true;
+    setTimeout(() => { initialLoad = false; }, 500);
     const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
     // Sort elements by data-sequence (default 0)
     const sortedElements = elements.slice().sort((a, b) => {
@@ -117,12 +119,17 @@ export default function Home() {
       const seqB = parseInt(b.getAttribute('data-sequence') || '0', 10);
       return seqA - seqB;
     });
+    // Ensure all elements start hidden (remove revealed, add hidden)
+    sortedElements.forEach(el => {
+      el.classList.remove('revealed');
+      el.classList.add('hidden');
+    });
     const observer = new IntersectionObserver(
       (entries, obs) => {
         // Collect all entries that are intersecting, and sort by data-sequence
         const revealed: { el: HTMLElement; sequence: number; baseDelay: number }[] = [];
         entries.forEach(entry => {
-          if (entry.isIntersecting) {
+          if (!initialLoad && entry.isIntersecting) {
             const el = entry.target as HTMLElement;
             const sequence = parseInt(el.getAttribute('data-sequence') || '0', 10);
             const baseDelay = parseInt(el.getAttribute('data-delay') || '0', 10);
@@ -154,8 +161,6 @@ export default function Home() {
       }
     );
     sortedElements.forEach(el => {
-      el.classList.remove('revealed');
-      el.classList.add('hidden');
       observer.observe(el);
     });
     return () => observer.disconnect();
@@ -250,15 +255,10 @@ export default function Home() {
   // Progress bar visibility - removed separate observer since we handle this in the main scroll system
 
 
-  // Scroll to top on every page load/reload (without blocking scroll)
+  // Scroll to top on every page load/reload (immediate, no delay)
   useEffect(() => {
-    // Always scroll to top on page load, but do it safely
-    const timeout = setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'instant' });
-      console.log('📍 Page loaded - scrolled to top');
-    }, 50); // Reduced delay for faster response
-    
-    return () => clearTimeout(timeout);
+    window.scrollTo(0, 0);
+    console.log('📍 Page loaded - scrolled to top (immediate)');
   }, []);
 
   // Initialize particles (exactly like original)
@@ -675,10 +675,7 @@ export default function Home() {
             {/* Logo - always visible, properly spaced */}
             <div 
               style={{ display: 'flex', justifyContent: 'center', marginBottom: '-60px' }} 
-              className="logo-always-visible hidden"
-              data-reveal
-              data-delay="0"
-              data-sequence="1"
+              className="logo-always-visible logo-fade"
             >
               <img
                 src="/logo.png"
@@ -696,10 +693,7 @@ export default function Home() {
                 marginBottom: '32px', 
                 lineHeight: '1.15' 
               }}
-              className="hero-gradient-text hero-glow mobile-scroll-reveal hidden"
-              data-reveal
-              data-delay="200"
-              data-sequence="2"
+              className="hero-gradient-text hero-glow title-fade"
             >
               SoundChain – Music, Ownership, Community.
             </h1>
