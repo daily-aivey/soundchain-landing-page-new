@@ -675,7 +675,7 @@ export default function Home() {
             {/* Logo - always visible, properly spaced */}
             <div 
               style={{ display: 'flex', justifyContent: 'center', marginBottom: '-60px' }} 
-              className="logo-always-visible"
+              className="logo-always-visible hidden"
               data-reveal
               data-delay="0"
               data-sequence="1"
@@ -696,7 +696,7 @@ export default function Home() {
                 marginBottom: '32px', 
                 lineHeight: '1.15' 
               }}
-              className="hero-gradient-text hero-glow mobile-scroll-reveal"
+              className="hero-gradient-text hero-glow mobile-scroll-reveal hidden"
               data-reveal
               data-delay="200"
               data-sequence="2"
@@ -706,6 +706,7 @@ export default function Home() {
 
             {/* Description - exactly like original */}
             <div
+              className="hidden"
               data-reveal
               {...(isMobile ? { 'data-sequence': '3', 'data-delay': '400' } : { 'data-delay': '200' })}
             >
@@ -734,7 +735,7 @@ export default function Home() {
               alignItems: 'center', 
               marginTop: '40px', 
               gap: '20px' 
-            }} data-reveal data-delay="400">
+            }} className="hidden" data-reveal data-delay="400">
               <input
                 type="email"
                 placeholder="Enter your email"
@@ -823,6 +824,7 @@ export default function Home() {
           {/* Progress Section - matching original design */}
           <section
             id="progress-section"
+            className="hidden"
             style={{
               maxWidth: '896px',
               margin: '0 auto 48px auto',
@@ -953,11 +955,11 @@ export default function Home() {
 
           {/* Benefits Section - Desktop: section reveals as a whole; Mobile: staggered individual cards */}
           <section
-            className="benefits-section"
+            className={["benefits-section", !isMobile ? "hidden" : ""].filter(Boolean).join(" ")}
             {...(!isMobile ? { 'data-reveal': true, 'data-delay': '800' } : {})}
           >
             <div
-              className="benefit-card"
+              className={["benefit-card", "hidden"].join(" ")}
               data-reveal={isMobile ? "true" : "false"}
               data-sequence={isMobile ? "1" : "0"}
               data-delay={isMobile ? "600" : "0"}
@@ -979,7 +981,7 @@ export default function Home() {
               <p style={{ color: '#9ca3af' }}>Own your favorite tracks</p>
             </div>
             <div
-              className="benefit-card"
+              className={["benefit-card", "hidden"].join(" ")}
               data-reveal={isMobile ? "true" : "false"}
               data-sequence={isMobile ? "2" : "0"}
               data-delay={isMobile ? "900" : "0"}
@@ -1001,7 +1003,7 @@ export default function Home() {
               <p style={{ color: '#9ca3af' }}>Support artists, get rewards</p>
             </div>
             <div
-              className="benefit-card"
+              className={["benefit-card", "hidden"].join(" ")}
               data-reveal={isMobile ? "true" : "false"}
               data-sequence={isMobile ? "3" : "0"}
               data-delay={isMobile ? "1200" : "0"}
@@ -1027,6 +1029,7 @@ export default function Home() {
                {/* Footer */}
         <footer 
           style={{ textAlign: 'center', color: '#6b7280', padding: '24px 0' }}
+          className="hidden"
           data-reveal 
           data-delay="1400"
         >
