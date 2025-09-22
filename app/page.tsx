@@ -140,6 +140,7 @@ export default function Home() {
               ? sequence * 300 + baseDelay
               : baseDelay;
           setTimeout(() => {
+            el.classList.remove('hidden');
             el.classList.add('revealed');
             if (el.id === 'progress-section') {
               setProgressVisible(true);
@@ -154,6 +155,7 @@ export default function Home() {
     );
     sortedElements.forEach(el => {
       el.classList.remove('revealed');
+      el.classList.add('hidden');
       observer.observe(el);
     });
     return () => observer.disconnect();
