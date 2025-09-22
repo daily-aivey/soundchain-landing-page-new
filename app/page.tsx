@@ -255,16 +255,8 @@ export default function Home() {
       window.scrollTo({ top: 0, behavior: 'instant' });
       console.log('📍 Page loaded - scrolled to top');
     }, 50); // Reduced delay for faster response
-
-    // Force scroll to top on reload
-    window.onbeforeunload = () => {
-      window.scrollTo(0, 0);
-    };
-
-    return () => {
-      clearTimeout(timeout);
-      window.onbeforeunload = null;
-    };
+    
+    return () => clearTimeout(timeout);
   }, []);
 
   // Initialize particles (exactly like original)
