@@ -111,7 +111,28 @@ export default function Home() {
   // Enhanced sequential scroll-based reveal system supporting data-sequence
   useEffect(() => {
     let initialLoad = true;
-    setTimeout(() => { initialLoad = false; }, 500);
+    const isMobileAtMount = window.innerWidth <= 768;
+    initialLoad = isMobileAtMount;
+    const initialWindowMs = isMobileAtMount ? 300 : 0;
+    const queued: { el: HTMLElement; sequence: number; baseDelay: number }[] = [];
+    setTimeout(() => {
+      initialLoad = false;
+      if (isMobileAtMount && queued.length) {
+        queued
+          .sort((a, b) => a.sequence - b.sequence)
+          .forEach(({ el, sequence, baseDelay }) => {
+            const finalDelay = sequence > 0 ? sequence * 300 + baseDelay : baseDelay;
+            setTimeout(() => {
+              el.classList.remove('hidden');
+              el.classList.add('revealed');
+              if (el.id === 'progress-section') {
+                setProgressVisible(true);
+              }
+            }, finalDelay);
+          });
+        queued.length = 0;
+      }
+    }, initialWindowMs);
     const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
     // Sort elements by data-sequence (default 0)
     const sortedElements = elements.slice().sort((a, b) => {
@@ -129,12 +150,17 @@ export default function Home() {
         // Collect all entries that are intersecting, and sort by data-sequence
         const revealed: { el: HTMLElement; sequence: number; baseDelay: number }[] = [];
         entries.forEach(entry => {
-          if (!initialLoad && entry.isIntersecting) {
+          if (entry.isIntersecting) {
             const el = entry.target as HTMLElement;
             const sequence = parseInt(el.getAttribute('data-sequence') || '0', 10);
             const baseDelay = parseInt(el.getAttribute('data-delay') || '0', 10);
-            revealed.push({ el, sequence, baseDelay });
-            obs.unobserve(el);
+
+            if (isMobileAtMount && initialLoad) {
+              queued.push({ el, sequence, baseDelay });
+            } else {
+              revealed.push({ el, sequence, baseDelay });
+              obs.unobserve(el);
+            }
           }
         });
         // Sort by sequence
