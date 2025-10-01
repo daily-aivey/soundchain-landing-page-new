@@ -111,35 +111,7 @@ export default function Home() {
   // Enhanced sequential scroll-based reveal system supporting data-sequence
   useEffect(() => {
     let initialLoad = true;
-    // Mobile-only shorter initial window and simple queue
-    const mobileAtMount = window.innerWidth <= 768;
-    const initialWindowMs = mobileAtMount ? 300 : 500;
-    const queued: { el: HTMLElement; sequence: number; baseDelay: number }[] = [];
-
-    setTimeout(() => {
-      initialLoad = false;
-      if (queued.length) {
-        // Reveal any elements that intersected during the initial window (e.g., mobile description)
-        queued
-          .sort((a, b) => a.sequence - b.sequence)
-          .forEach(({ el, sequence, baseDelay }) => {
-            const finalDelay = sequence === 1
-              ? baseDelay
-              : sequence > 0
-                ? sequence * 300 + baseDelay
-                : baseDelay;
-            setTimeout(() => {
-              el.classList.remove('hidden');
-              el.classList.add('revealed');
-              if ((el as HTMLElement).id === 'progress-section') {
-                setProgressVisible(true);
-              }
-            }, finalDelay);
-          });
-        queued.length = 0;
-      }
-    }, initialWindowMs);
-
+    setTimeout(() => { initialLoad = false; }, 500);
     const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
     // Sort elements by data-sequence (default 0)
     const sortedElements = elements.slice().sort((a, b) => {
@@ -157,19 +129,12 @@ export default function Home() {
         // Collect all entries that are intersecting, and sort by data-sequence
         const revealed: { el: HTMLElement; sequence: number; baseDelay: number }[] = [];
         entries.forEach(entry => {
-          if (entry.isIntersecting) {
+          if (!initialLoad && entry.isIntersecting) {
             const el = entry.target as HTMLElement;
             const sequence = parseInt(el.getAttribute('data-sequence') || '0', 10);
             const baseDelay = parseInt(el.getAttribute('data-delay') || '0', 10);
-
-            if (initialLoad) {
-              // During initial window (notably on mobile), queue the element and keep observing
-              queued.push({ el, sequence, baseDelay });
-            } else {
-              // Normal path after initial window: reveal now and stop observing
-              revealed.push({ el, sequence, baseDelay });
-              obs.unobserve(el);
-            }
+            revealed.push({ el, sequence, baseDelay });
+            obs.unobserve(el);
           }
         });
         // Sort by sequence
