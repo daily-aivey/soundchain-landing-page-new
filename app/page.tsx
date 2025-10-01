@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { showToast } from '../lib/toast';
 
 function isValidEmail(email: string): boolean {
@@ -255,10 +255,28 @@ export default function Home() {
   // Progress bar visibility - removed separate observer since we handle this in the main scroll system
 
 
-  // Scroll to top on every page load/reload (immediate, no delay)
-  useEffect(() => {
+  // Force top on initial load/reload and disable browser scroll restoration
+  useLayoutEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
     window.scrollTo(0, 0);
-    console.log('📍 Page loaded - scrolled to top (immediate)');
+    return () => {
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'auto';
+      }
+    };
+  }, []);
+
+  // BFCache safety (Safari/iOS can restore scroll from back-forward cache)
+  useEffect(() => {
+    const onPageShow = (e: any) => {
+      if (e && e.persisted) {
+        window.scrollTo(0, 0);
+      }
+    };
+    window.addEventListener('pageshow', onPageShow);
+    return () => window.removeEventListener('pageshow', onPageShow);
   }, []);
 
   // Initialize particles (exactly like original)
