@@ -1,5 +1,5 @@
 import { Resend } from 'resend';
-import { addSignup, getProgress, checkEmailExists } from '../../../lib/database.js';
+import { addSignup, getProgress } from '../../../lib/database.js';
 
 // Initialize Resend only if API key is available
 let resend;
@@ -21,32 +21,27 @@ export async function POST(req) {
       );
     }
 
-    // 2) Check duplicate first (best-effort)
-    try {
-      const exists = await checkEmailExists(normalizedEmail);
-      if (exists) {
-        return new Response(
-          JSON.stringify({ ok: false, error: 'Email already registered' }),
-          { status: 409, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } }
-        );
-      }
-    } catch (_) {
-      // if check fails, proceed to insert and let unique constraint decide
-    }
-
     // 3) Insert (idempotent via DB unique constraint)
     let inserted = false;
     try {
       inserted = await addSignup(normalizedEmail);
     } catch (e) {
-      // If DB reports unique violation or adapter returns false, treat as duplicate
+      const code = e?.code || e?.original?.code || e?.cause?.code;
+      if (code === '23505') {
+        // PostgreSQL unique_violation
+        return new Response(
+          JSON.stringify({ ok: false, error: 'Email already registered' }),
+          { status: 409, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } }
+        );
+      }
       return new Response(
-        JSON.stringify({ ok: false, error: 'Email already registered' }),
-        { status: 409, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } }
+        JSON.stringify({ ok: false, error: 'Database error' }),
+        { status: 500, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } }
       );
     }
 
     if (!inserted) {
+      // Adapter indicated existing record (idempotent no-op)
       return new Response(
         JSON.stringify({ ok: false, error: 'Email already registered' }),
         { status: 409, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } }

@@ -111,26 +111,46 @@ export default function Home() {
   // Enhanced sequential scroll-based reveal system supporting data-sequence
   useEffect(() => {
     let initialLoad = true;
+    // Guard: reveal ANY [data-reveal] only after the user has scrolled at least once
+    let hasUserScrolled = false;
+    // We'll keep a queue that we can flush on first scroll (declared here so handlers can see it)
+    let queued: { el: HTMLElement; sequence: number; baseDelay: number }[] = [];
+
+    const flushQueued = () => {
+      if (!queued.length) return;
+      queued
+        .sort((a, b) => a.sequence - b.sequence)
+        .forEach(({ el, sequence, baseDelay }) => {
+          const finalDelay = sequence > 0 ? sequence * 300 + baseDelay : baseDelay;
+          setTimeout(() => {
+            el.classList.remove('hidden');
+            el.classList.add('revealed');
+            if (el.id === 'progress-section') {
+              setProgressVisible(true);
+            }
+          }, finalDelay);
+        });
+      queued.length = 0;
+    };
+
+    const onFirstScroll = () => {
+      hasUserScrolled = true;
+      flushQueued();
+      window.removeEventListener('scroll', onFirstScroll);
+    };
+    window.addEventListener('scroll', onFirstScroll, { once: true, passive: true });
+
     const isMobileAtMount = window.innerWidth <= 768;
     initialLoad = isMobileAtMount;
     const initialWindowMs = isMobileAtMount ? 300 : 0;
-    const queued: { el: HTMLElement; sequence: number; baseDelay: number }[] = [];
+    // 'queued' declared above so we can flush it on first scroll
     setTimeout(() => {
       initialLoad = false;
       if (isMobileAtMount && queued.length) {
-        queued
-          .sort((a, b) => a.sequence - b.sequence)
-          .forEach(({ el, sequence, baseDelay }) => {
-            const finalDelay = sequence > 0 ? sequence * 300 + baseDelay : baseDelay;
-            setTimeout(() => {
-              el.classList.remove('hidden');
-              el.classList.add('revealed');
-              if (el.id === 'progress-section') {
-                setProgressVisible(true);
-              }
-            }, finalDelay);
-          });
-        queued.length = 0;
+        if (hasUserScrolled) {
+          flushQueued();
+        }
+        // If user hasn't scrolled yet, queued items will flush on first scroll
       }
     }, initialWindowMs);
     const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
@@ -152,6 +172,15 @@ export default function Home() {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             const el = entry.target as HTMLElement;
+            // Do not reveal ANY [data-reveal] element until the user has scrolled at least once
+            if (!hasUserScrolled) {
+              if (isMobileAtMount && initialLoad) {
+                const sequence = parseInt(el.getAttribute('data-sequence') || '0', 10);
+                const baseDelay = parseInt(el.getAttribute('data-delay') || '0', 10);
+                queued.push({ el, sequence, baseDelay });
+              }
+              return; // keep observing; reveal after the first user scroll
+            }
             const sequence = parseInt(el.getAttribute('data-sequence') || '0', 10);
             const baseDelay = parseInt(el.getAttribute('data-delay') || '0', 10);
 
@@ -604,8 +633,8 @@ export default function Home() {
         data = { ok: false };
       }
 
-      // Check for successful email send, even if database failed
-      if (data.id) {
+      // Success: rely on HTTP status + presence of count/goal from API
+      if (response.ok && typeof data.count === 'number' && typeof data.goal === 'number') {
         // If we have an email ID, the email was successfully sent even if database failed
         setEmail('');
         
@@ -619,7 +648,6 @@ export default function Home() {
           
           // Update target progress to trigger new animation
           setTargetProgress(percentage);
-          setProgressVisible(true);
           
           console.log(`🎯 FORM SUBMISSION: Updated progress to ${percentage.toFixed(2)}% (${data.count}/${data.goal})`);
         }
