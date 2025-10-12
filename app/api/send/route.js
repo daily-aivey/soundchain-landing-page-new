@@ -41,10 +41,10 @@ export async function POST(req) {
     }
 
     if (!inserted) {
-      // Adapter indicated existing record (idempotent no-op)
+      // Adapter returned a falsy value without throwing – treat as DB failure, not duplicate
       return new Response(
-        JSON.stringify({ ok: false, error: 'Email already registered' }),
-        { status: 409, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } }
+        JSON.stringify({ ok: false, error: 'Database error' }),
+        { status: 500, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } }
       );
     }
 
