@@ -1,6 +1,9 @@
 import { Resend } from 'resend';
 import { addSignup, getProgress } from '../../../lib/database.js';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 // Initialize Resend only if API key is available
 let resend;
 if (process.env.RESEND_API_KEY) {
@@ -60,8 +63,9 @@ export async function POST(req) {
     let emailSent = false;
     if (resend) {
       try {
+        const fromAddress = process.env.EMAIL_FROM || 'SoundChain <noreply@sndchain.xyz>';
         await resend.emails.send({
-          from: 'SoundChain <noreply@sndchain.xyz>',
+          from: fromAddress,
           to: normalizedEmail,
           subject: "Welcome to SoundChain - We're excited to have you on board",
           html: getWelcomeEmailHtml(
@@ -71,7 +75,8 @@ export async function POST(req) {
           ),
         });
         emailSent = true;
-      } catch (_) {
+      } catch (e) {
+        console.error('Resend send error:', { message: e?.message, name: e?.name, status: e?.statusCode });
         // Email send failed; we still report signup success
       }
     }
